@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#12151c">
+<title>Jodi's Program · by Dom</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+  :root{
+    --bg:#12151c;--panel:#1a1f2b;--panel-2:#212837;--line:#2c3446;
+    --ink:#eef2f8;--muted:#8a95a8;--accent:#ff6a3d;--accent-soft:#3a2419;
+    --w1:#5cb0ff;--w2:#4ff0a6;--good:#3ddc97;
+    --entry:#0c0f14;--entry-green:#3dff9e;--entry-dim:#2f5f45;
+    --radius:14px;
+    --mono:'DM Mono',ui-monospace,Menlo,Consolas,monospace;
+    --disp:'Barlow Condensed','Arial Narrow',system-ui,sans-serif;
+    --body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;padding-bottom:40px;-webkit-font-smoothing:antialiased;}
+  header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,var(--bg) 70%,rgba(18,21,28,0));padding:calc(env(safe-area-inset-top) + 14px) 16px 8px;}
+  .brand{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+  .brand h1{font-family:var(--disp);font-weight:700;letter-spacing:.02em;font-size:26px;line-height:1;margin:0;text-transform:uppercase;}
+  .brand .sub{color:var(--muted);font-size:12px;letter-spacing:.14em;text-transform:uppercase;}
+  .days{display:flex;gap:8px;margin:14px 16px 4px;}
+  .day-tab{flex:1;text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 6px;cursor:pointer;transition:.15s;}
+  .day-tab .d-name{font-family:var(--disp);font-weight:700;font-size:22px;text-transform:uppercase;line-height:1;}
+  .day-tab .d-focus{font-size:12px;color:#a7b2c4;letter-spacing:.02em;margin-top:4px;display:block;}
+  .day-tab[data-w="0"].active{border-color:var(--w1);box-shadow:inset 0 0 0 1px var(--w1);}
+  .day-tab[data-w="1"].active{border-color:var(--w2);box-shadow:inset 0 0 0 1px var(--w2);}
+  .day-tab.active{background:var(--panel-2);}
+  .day-tab[data-w="0"].active .d-name{color:var(--w1);}
+  .day-tab[data-w="1"].active .d-name{color:var(--w2);}
+  .meta{margin:14px 16px 2px;color:#9aa6ba;font-size:14px;letter-spacing:.02em;line-height:1.4;}
+  .meta b{color:var(--ink);}
+  main{padding:6px 12px 0;}
+  .ex{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin:10px 4px;overflow:hidden;}
+  .ex-top{display:flex;align-items:center;gap:12px;padding:13px 14px;}
+  .ex-name{flex:1;}
+  .ex-name .nm{font-weight:600;font-size:20px;line-height:1.2;color:#ffffff;letter-spacing:.005em;}
+  .ex-name .tag{display:inline-block;margin-top:5px;font-size:13px;color:#a7b2c4;}
+  .ex-name .tech{color:var(--accent);font-weight:600;}
+  .setsreps{flex:0 0 auto;text-align:right;font-family:var(--mono);padding-left:6px;}
+  .setsreps .big{font-size:23px;color:#ffffff;font-weight:500;line-height:1.05;white-space:nowrap;}
+  .setsreps .lbl{font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:3px;}
+  .log{display:flex;align-items:stretch;border-top:1px solid var(--line);background:var(--entry);}
+  .log .field{flex:1;display:flex;flex-direction:column;padding:12px 14px 13px;}
+  .log .field + .field{border-left:1px solid var(--line);}
+  .log label{font-size:12px;color:#9aa6ba;letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px;font-weight:600;}
+  .log input{background:transparent;border:none;outline:none;color:var(--entry-green);font-family:var(--mono);font-size:34px;font-weight:500;width:100%;padding:0;line-height:1.1;}
+  .log input::placeholder{color:var(--entry-dim);font-weight:400;}
+  .log input:focus{color:#ffffff;}
+  .saved-dot{align-self:center;margin-right:13px;width:10px;height:10px;border-radius:50%;background:#243043;transition:.3s;flex:0 0 auto;}
+  .ex.dirty .saved-dot{background:var(--good);box-shadow:0 0 10px var(--good);}
+  .cardio.dirty .saved-dot{background:var(--good);box-shadow:0 0 10px var(--good);}
+  .prev{font-size:12px;color:#9aa6ba;margin-top:4px;min-height:14px;}
+  .prev b{color:var(--good);font-family:var(--mono);font-size:13px;}
+
+  /* ---- Superset grouping ---- */
+  .superset{margin:14px 4px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;position:relative;background:var(--panel);}
+  .ss-head{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--panel-2);border-bottom:1px solid var(--line);}
+  .ss-head .ss-badge{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);}
+  .ss-head .ss-note{font-size:13px;color:#9aa6ba;}
+  .superset .ex{border:none;border-radius:0;margin:0;background:transparent;}
+  .superset .ex + .ex{border-top:1px dashed var(--line);}
+  .ex .ss-letter{font-family:var(--disp);font-weight:700;font-size:20px;color:var(--muted);width:34px;flex:0 0 auto;text-align:center;letter-spacing:.02em;}
+  .superset .ex[data-w="0"] .ss-letter{color:var(--w1);}
+  .superset .ex[data-w="1"] .ss-letter{color:var(--w2);}
+
+  /* ---- Cardio / finisher card ---- */
+  .cardio{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin:10px 4px 14px;overflow:hidden;border-left:3px solid var(--w2);}
+  .cardio-head{display:flex;align-items:center;gap:10px;padding:12px 14px 4px;}
+  .cardio-head .c-badge{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:.07em;text-transform:uppercase;color:var(--w2);}
+  .cardio-head .c-time{margin-left:auto;font-family:var(--mono);font-size:16px;color:#ffffff;}
+  .cardio-head .c-time span{font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+  .machines{display:flex;gap:7px;padding:6px 14px 12px;flex-wrap:wrap;}
+  .machine{flex:1;min-width:64px;text-align:center;background:var(--panel-2);border:1px solid var(--line);color:#a7b2c4;border-radius:10px;padding:9px 4px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;}
+  .machine.on{background:var(--w2);border-color:var(--w2);color:#0c130e;}
+  .cardio .log{border-top:1px solid var(--line);}
+
+  .notes{margin:14px 8px 8px;padding:0 8px;}
+  .notes .n{display:flex;gap:9px;font-size:13px;color:var(--muted);line-height:1.45;margin-bottom:8px;}
+  .notes .n .k{color:var(--accent);font-weight:600;flex:0 0 auto;font-size:12px;letter-spacing:.03em;text-transform:uppercase;padding-top:1px;}
+  .tools{margin:22px 16px 0;display:flex;gap:10px;flex-wrap:wrap;}
+  .btn{flex:1;min-width:130px;background:var(--panel);border:1px solid var(--line);color:var(--ink);padding:12px;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;}
+  .btn.warn{color:#ff8a8a;border-color:#3a2529;}
+  .footnote{margin:16px 20px 0;color:var(--muted);font-size:11.5px;line-height:1.5;}
+  @media (min-width:620px){body{max-width:600px;margin:0 auto;border-left:1px solid var(--line);border-right:1px solid var(--line);}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><h1>Jodi's Program</h1><span class="sub">Made by Dom</span></div>
+</header>
+<div class="days" id="days"></div>
+<div class="meta" id="meta"></div>
+<main id="main"></main>
+<div class="tools">
+  <button class="btn" id="whoBtn">👤 <span id="whoLabel">Set name</span></button>
+  <button class="btn" id="exportBtn">⬇︎ Backup my log</button>
+  <button class="btn warn" id="clearBtn">Clear this workout</button>
+</div>
+<p class="footnote">Weights save automatically on <b>this phone</b>, per person. Starting weights are pre-filled — just type over them each session. No account or internet needed after loading. Tap “Set name” so you and your friends each keep separate logs.</p>
+
+<script>
+/* ============================================================
+   PROGRAM DATA — two workouts, every pair a superset.
+   startW = starting weight, pre-filled into the weight field on first use.
+   ============================================================ */
+const PROGRAM = [
+  {
+    name:"Workout 1", accent:"w1",
+    tagline:"3 sets × 12 reps · A1→A2 back-to-back, rest, repeat",
+    items:[
+      {type:"superset",pair:"A",ex:[
+        {nm:"Bridge / Hip Extensions",s:3,r:"12"},
+        {nm:"Lat Pull",s:3,r:"12",startW:"25"}]},
+      {type:"superset",pair:"B",ex:[
+        {nm:"DB Single-Leg King Deadlift",tag:"next to the mirror",s:3,r:"12",startW:"2.5"},
+        {nm:"Cable Seated Rows",tag:"elbows down and back",s:3,r:"12"}]},
+      {type:"superset",pair:"C",ex:[
+        {nm:"DB Romanian Deadlifts",s:3,r:"12",startW:"7.5"},
+        {nm:"DB Flat Bench Chest Press",s:3,r:"12",startW:"7.5"}]},
+      {type:"superset",pair:"D",ex:[
+        {nm:"Walking Lunges",s:3,r:"12"},
+        {nm:"Dead Bug (DB)",s:3,r:"12",startW:"2.5"}]},
+      {type:"finisher",nm:"Sled Push",tag:"work up to the laps",s:"—",r:"laps"},
+    ],
+    notes:[["Supersets","Do the two moves of each pair back-to-back with minimal rest, then rest before the next round."]]
+  },
+  {
+    name:"Workout 2", accent:"w2",
+    tagline:"3 sets × 12 reps · A1→A2 back-to-back, rest, repeat",
+    items:[
+      {type:"superset",pair:"A",ex:[
+        {nm:"Swiss Ball Hamstring Curls",s:3,r:"12"},
+        {nm:"DB Deltoid Lateral Raises",s:3,r:"12"}]},
+      {type:"superset",pair:"B",ex:[
+        {nm:"Leg Press",s:3,r:"12"},
+        {nm:"DB Overhead Lat Extension",s:3,r:"12",startW:"7.5"}]},
+      {type:"superset",pair:"C",ex:[
+        {nm:"Leg Curls",s:3,r:"12",startW:"35"},
+        {nm:"DB One-Arm Rows",s:3,r:"12",startW:"7.5"}]},
+      {type:"superset",pair:"D",ex:[
+        {nm:"Reverse Lunges",s:3,r:"12"},
+        {nm:"Rope Face Pulls",s:3,r:"12",startW:"20"}]},
+      {type:"superset",pair:"E",ex:[
+        {nm:"Russian Twists",s:3,r:"12"},
+        {nm:"Plank",tag:"hold as long as possible",s:3,r:"max",timed:true}]},
+    ],
+    notes:[["Supersets","Do the two moves of each pair back-to-back with minimal rest, then rest before the next round."]]
+  },
+];
+
+/* ============================================================ STATE + STORAGE ============================================================ */
+const KEY_STATE="ss2_state_v1", KEY_LOG="ss2_log_v1";
+let state=load(KEY_STATE,{w:0,who:""});
+let log=load(KEY_LOG,{});
+function load(k,f){try{const v=localStorage.getItem(k);return v?JSON.parse(v):f;}catch(e){return f;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function who(){return state.who||"default";}
+function slug(w,name){return "W"+w+"|"+name;}
+function entry(key){const u=who();return ((log[u]||{})[key])||{w:"",reps:""};}
+function setEntry(key,field,val){const u=who();log[u]=log[u]||{};log[u][key]=log[u][key]||{w:"",reps:""};log[u][key][field]=val;save(KEY_LOG,log);}
+/* seed a starting weight once, only if this person has never touched that field */
+function seededWeight(key,startW){
+  const u=who();
+  const has=(log[u]||{})[key];
+  if(has && (has.w!==undefined && has.w!=="")) return has.w;      // already logged
+  if(has && has.seeded) return has.w||"";                          // seeded then cleared → respect empty
+  if(startW){ setEntry(key,"w",startW); setEntry(key,"seeded",true); return startW; }
+  return "";
+}
+function flatten(wk){const out=[];wk.items.forEach(it=>{if(it.type==="superset")it.ex.forEach(e=>out.push(e));else out.push(it);});return out;}
+
+/* ============================================================ RENDER ============================================================ */
+const daysEl=document.getElementById("days"),metaEl=document.getElementById("meta"),mainEl=document.getElementById("main");
+
+function renderDays(){
+  daysEl.innerHTML="";
+  PROGRAM.forEach((wk,i)=>{
+    const t=document.createElement("button");
+    t.className="day-tab"+(i===state.w?" active":"");
+    t.dataset.w=i;
+    t.innerHTML=`<span class="d-name">${wk.name}</span><span class="d-focus">${wk.items.length} groups</span>`;
+    t.onclick=()=>{state.w=i;save(KEY_STATE,state);renderDays();renderMain();window.scrollTo({top:0,behavior:'smooth'});};
+    daysEl.appendChild(t);
+  });
+}
+function exCardHTML(ex,letter){
+  const key=slug(state.w,ex.nm);
+  const e=entry(key);
+  const tagline=ex.tech
+    ? `<span class="tag"><span class="tech">${ex.tech}</span>${ex.tag?` · ${ex.tag}`:""}</span>`
+    : (ex.tag?`<span class="tag">${ex.tag}</span>`:"");
+  const letterHTML=letter?`<span class="ss-letter">${letter}</span>`:"";
+  let logHTML;
+  if(ex.timed){
+    logHTML=`
+      <div class="log">
+        <div class="field"><label>Time held</label>
+          <input inputmode="text" placeholder="e.g. 1:30" value="${e.time||""}" data-key="${key}" data-f="time"></div>
+        <span class="saved-dot"></span>
+      </div>`;
+  } else {
+    const wVal=seededWeight(key,ex.startW);
+    logHTML=`
+      <div class="log">
+        <div class="field"><label>Weight</label>
+          <input inputmode="decimal" placeholder="—" value="${wVal||""}" data-key="${key}" data-f="w"></div>
+        <div class="field"><label>Reps done</label>
+          <input inputmode="numeric" placeholder="—" value="${e.reps||""}" data-key="${key}" data-f="reps"></div>
+        <span class="saved-dot"></span>
+      </div>`;
+  }
+  return `
+    <div class="ex" data-w="${state.w}">
+      <div class="ex-top">
+        ${letterHTML}
+        <div class="ex-name">
+          <div class="nm">${ex.nm}</div>
+          ${tagline}
+        </div>
+        <div class="setsreps">
+          <div class="big">${ex.s} × ${ex.r}</div>
+          <div class="lbl">sets · reps</div>
+        </div>
+      </div>
+      ${logHTML}
+    </div>`;
+}
+function finisherHTML(it){
+  const key=slug(state.w,it.nm);
+  const e=entry(key);
+  return `
+    <div class="cardio">
+      <div class="cardio-head"><span class="c-badge">${it.nm}</span>${it.tag?`<span class="c-time"><span>${it.tag}</span></span>`:""}</div>
+      <div class="log">
+        <div class="field"><label>Laps / Rounds</label>
+          <input inputmode="numeric" placeholder="—" value="${e.w||""}" data-key="${key}" data-f="w"></div>
+        <div class="field"><label>Weight / Load</label>
+          <input inputmode="decimal" placeholder="—" value="${e.reps||""}" data-key="${key}" data-f="reps"></div>
+        <span class="saved-dot"></span>
+      </div>
+    </div>`;
+}
+function renderMain(){
+  const wk=PROGRAM[state.w];
+  metaEl.innerHTML=`<b>${wk.tagline}</b>`;
+  let html="";
+  wk.items.forEach(it=>{
+    if(it.type==="superset"){
+      let inner="";
+      it.ex.forEach((ex,j)=>inner+=exCardHTML(ex,`${it.pair}${j+1}`));
+      html+=`<div class="superset">
+        <div class="ss-head"><span class="ss-badge">Superset ${it.pair}</span><span class="ss-note">${it.pair}1 → ${it.pair}2, back-to-back</span></div>
+        ${inner}
+      </div>`;
+    } else if(it.type==="finisher"){
+      html+=finisherHTML(it);
+    } else {
+      html+=exCardHTML(it,null);
+    }
+  });
+  if(wk.notes&&wk.notes.length){
+    let n="";wk.notes.forEach(x=>n+=`<div class="n"><span class="k">${x[0]}</span><span>${x[1]}</span></div>`);
+    html+=`<div class="notes">${n}</div>`;
+  }
+  mainEl.innerHTML=html;
+  mainEl.querySelectorAll("input").forEach(inp=>{
+    inp.addEventListener("input",()=>{
+      setEntry(inp.dataset.key,inp.dataset.f,inp.value);
+      const card=inp.closest(".ex")||inp.closest(".cardio");card.classList.add("dirty");
+      clearTimeout(card._t);card._t=setTimeout(()=>card.classList.remove("dirty"),1200);
+    });
+  });
+}
+function renderAll(){renderDays();renderMain();updateWho();}
+
+/* ============================================================ TOOLS ============================================================ */
+function updateWho(){document.getElementById("whoLabel").textContent=state.who?state.who:"Set name";}
+document.getElementById("whoBtn").onclick=()=>{
+  const name=prompt("Whose log is this? (e.g. your first name)\nEach name keeps its own weights on this phone.",state.who||"");
+  if(name!==null){state.who=name.trim();save(KEY_STATE,state);renderAll();}
+};
+document.getElementById("clearBtn").onclick=()=>{
+  const wk=PROGRAM[state.w];
+  if(confirm(`Clear all weights & reps for ${wk.name}?`)){
+    const u=who();
+    flatten(wk).forEach(ex=>{const k=slug(state.w,ex.nm);if(log[u]&&log[u][k])delete log[u][k];});
+    save(KEY_LOG,log);renderMain();
+  }
+};
+document.getElementById("exportBtn").onclick=()=>{
+  let lines=[`Superset program log — ${state.who||"default"}`,""];
+  PROGRAM.forEach((wk,wi)=>{
+    const rows=[];
+    flatten(wk).forEach(ex=>{
+      const e=entry(slug(wi,ex.nm));
+      if(ex.timed){ if(e.time)rows.push(`  ${ex.nm}: ${e.time} held`); }
+      else if((e.w&&e.w!=="")||e.reps)rows.push(`  ${ex.nm}: ${e.w||"—"}  (${e.reps||"—"} reps)`);
+    });
+    if(rows.length){lines.push(wk.name);lines.push(...rows,"");}
+  });
+  const blob=new Blob([lines.join("\n")],{type:"text/plain"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download=`superset-log-${(state.who||"me").toLowerCase().replace(/\s+/g,'-')}.txt`;a.click();
+};
+renderAll();
+</script>
+</body>
+</html>
